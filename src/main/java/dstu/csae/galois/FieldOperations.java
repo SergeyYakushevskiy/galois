@@ -3,8 +3,14 @@ package dstu.csae.galois;
 import dstu.csae.exceptions.ExceptionMessageConstants;
 import dstu.csae.exceptions.ReverseElementEvaluationException;
 import dstu.csae.math.ArithmeticFunctions;
+import dstu.csae.polynomial.Polynomial;
 
-class FieldOperations{
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
+
+class FieldOperations extends Operations {
 
     static int addition(Field field, int first, int second){
         if(first == 0 && second == 0){
@@ -18,8 +24,27 @@ class FieldOperations{
         return  bringToField(field, first + second);
     }
 
+    static Optional<Polynomial> addition(Field field, Polynomial first, Polynomial second){
+        if(checkNullable(first, second)){
+            return Optional.empty();
+        }
+        int[] firstC = first.getCoefficients();
+        int[] secondC = second.getCoefficients();
+        return Optional.of(new Polynomial(addition(field, firstC, secondC)));
+    }
+
     static int subtraction(Field field, int reduced, int subtracted){
         return addition(field, reduced, inverseOfAddition(field, subtracted));
+    }
+
+    static Optional<Polynomial> subtraction(Field field, Polynomial reduced, Polynomial subtracted){
+        if(checkNullable(reduced, subtracted)){
+            return Optional.empty();
+        }
+
+        int[] reducedC = reduced.getCoefficients();
+        int[] subtractedC = subtracted.getCoefficients();
+        return Optional.of(new Polynomial(subtraction(field, reducedC, subtractedC)));
     }
 
     static int multiplication(Field field, int first, int second){
@@ -29,6 +54,18 @@ class FieldOperations{
         first = bringToField(field, first);
         second = bringToField(field, second);
         return bringToField(field, first * second);
+    }
+
+    static Optional<Polynomial> multiplication(Field field, Polynomial first, Polynomial second){
+        if(checkNullable(first, second)){
+            return Optional.empty();
+        }
+        if(first.equals(Polynomial.ZERO) || second.equals(Polynomial.ZERO)){
+            return Optional.of(Polynomial.ZERO.clone());
+        }
+        int[] firstC = first.getCoefficients();
+        int[] secondC = second.getCoefficients();
+        return Optional.of(new Polynomial(multiplication(field, firstC, secondC)));
     }
 
     static int division(Field field, int divisible, int divisor)
@@ -42,6 +79,38 @@ class FieldOperations{
         }
         divisor = inverseOfMultiplication(field, divisor);
         return multiplication(field, divisible, divisor);
+    }
+
+    static Optional<Polynomial> division(Field field, Polynomial divisible, Polynomial divisor)
+            throws IllegalArgumentException{
+        if(checkNullable(field, divisible, divisor)){
+            return Optional.empty();
+        }
+        if(divisor.equals(Polynomial.ZERO)) {
+            throw new IllegalArgumentException(ExceptionMessageConstants.DIVIDE_BY_ZERO);
+        }
+        if(divisible.equals(Polynomial.ZERO)){
+            return Optional.of(Polynomial.ZERO.clone());
+        }
+        int[] divisibleC = divisible.getCoefficients();
+        int[] divisorC = divisor.getCoefficients();
+        return Optional.of(new Polynomial(division(field, divisibleC, divisorC)));
+    }
+
+    static Optional<Polynomial> mod(Field field, Polynomial divisible, Polynomial divisor)
+            throws IllegalArgumentException{
+        if(checkNullable(field, divisible, divisor)){
+            return Optional.empty();
+        }
+        int[] divisibleC = divisible.getCoefficients();
+        int[] divisorC = divisor.getCoefficients();
+        return Optional.of(new Polynomial(
+                subtraction(field, divisibleC,
+                        multiplication(field, divisorC,
+                                division(field, divisibleC, divisorC)
+                        )
+                )
+        ));
     }
 
     static int inverseOfAddition(Field field, int number){
@@ -95,20 +164,108 @@ class FieldOperations{
         return number;
     }
 
+    static boolean isIrreducible(Field field, Polynomial p){
+        //Либо полином - это произведение полиномов первой степени (когда есть корни уравнения p(x) == 0)
+        // Либо полином - это произведение двух неприводимых в этом же поле полиномов,
+        // сумма старших степений которых равна старшей степени p(x).
+        // сделать проверку на сохранение старшей степени при приведении полинома к полю
+        // 
+        return false;
+    }
+
+    public static ArrayList<Polynomial> factorize(Field field, Polynomial polynomial){
+        ArrayList<Polynomial> multipliers =  new ArrayList<>();
+        Optional.ofNullable(polynomial).ifPresent(p -> {
+
+        });
+        return multipliers;
+    }
+
+    public static Optional<Polynomial> gcd(Field field, Polynomial first, Polynomial second) {
+        if (checkNullable(field, field, second)){
+            return Optional.empty();
+        }
+        int[] firstC = first.getCoefficients();
+        int[] secondC = second.getCoefficients();
+        return Optional.of(new Polynomial(gcd(field, firstC, secondC)));
+    }
+
     static int bringToField(Field field, int number){
         if(number == 0){
             return 0;
         }
         int modulo = field.getCharacteristic();
-        int multiplication = ArithmeticFunctions.getMultipliersList(number).stream()
-                .map(x -> x % modulo)
-                .reduce(1, (acc, x) -> acc * x);
-        multiplication %= multiplication > 0 ? modulo : -modulo;
+        int multiplication = number % modulo;
+        multiplication = multiplication > 0 ? multiplication : multiplication + modulo;
         return multiplication;
+    }
+
+    public Optional<Polynomial> bringToField(Field field, Polynomial polynomial){
+        if(polynomial == null){
+            return Optional.empty();
+        }
+        int[] coefficients = bringToField(field, polynomial.getCoefficients());
+        return Optional.of(new Polynomial(coefficients));
     }
 
     static boolean isInField(Field field, int number){
         return number >= 0 && number < field.getCharacteristic();
     }
 
+    static Optional<Boolean> isInField(Field field, Polynomial polynomial){
+        if(polynomial == null){
+            return Optional.empty();
+        }
+        return Optional.of(Arrays.stream(polynomial.getCoefficients())
+                .allMatch(x -> isInField(field, x)));
+    }
+
+    private static int[] addition(Field field, int[] firstC, int[] secondC){
+        firstC = bringToField(field, firstC);
+        secondC = bringToField(field, secondC);
+        return bringToField(field, addition(firstC, secondC));
+    }
+
+    private static int[] subtraction(Field field, int[] reducedC, int[] subtractedC){
+        reducedC = bringToField(field, reducedC);
+        subtractedC = bringToField(field, subtractedC);
+        return bringToField(field, subtraction(reducedC, subtractedC));
+    }
+
+    private static int[] multiplication(Field field, int[] firstC, int[] secondC){
+        firstC = bringToField(field, firstC);
+        secondC = bringToField(field, secondC);
+        return bringToField(field, multiplication(firstC, secondC));
+    }
+
+    private static int[] division(Field field, int[] divisible, int[] divisor){
+        divisible = bringToField(field,divisible);
+        divisor = bringToField(field, divisor);
+        int[] division = new int[divisible.length - divisor.length + 1];
+        int[] current;
+        int divisibleDegree = divisible.length - 1;
+        int divisorDegree = divisor.length - 1;
+        while(divisibleDegree >= divisorDegree){
+            current = new int[divisibleDegree];
+            division[divisibleDegree - divisorDegree] = divisible[divisibleDegree] / divisor[divisorDegree];
+            current[divisibleDegree - divisorDegree] = division[divisibleDegree - divisorDegree];
+            divisible = subtraction(field, divisible, multiplication(field, current, divisor));
+            divisibleDegree--;
+        }
+        return division;
+    }
+
+    private static int[] gcd(Field field, int[] firstC, int[] secondC){
+        return null;
+    }
+
+    private static int[] bringToField(Field field, int[] coefficients){
+        return Arrays.stream(coefficients)
+                .map(x -> bringToField(field, x))
+                .toArray();
+    }
+
+    private static boolean checkNullable(Object ... objects){
+        return Arrays.stream(objects).anyMatch(Objects::isNull);
+    }
 }

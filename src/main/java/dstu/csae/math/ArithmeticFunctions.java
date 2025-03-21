@@ -6,6 +6,8 @@ import java.util.stream.IntStream;
 
 public class ArithmeticFunctions {
 
+
+
     public static int getEulerFunction(int number){
         if(number == 1){
             return 1;
@@ -46,7 +48,8 @@ public class ArithmeticFunctions {
 
     public static HashMap<Integer, Integer> getMultipliersMap(int number){
         HashMap<Integer, Integer> multipliers = new HashMap<>();
-        getMultipliersList(number).forEach(x -> multipliers.put(x, multipliers.getOrDefault(x, 0) + 1));
+        getMultipliersList(number)
+                .forEach(x -> multipliers.put(x, multipliers.getOrDefault(x, 0) + 1));
         return multipliers;
     }
 

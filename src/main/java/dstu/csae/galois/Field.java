@@ -6,6 +6,7 @@ import dstu.csae.math.ArithmeticFunctions;
 import dstu.csae.polynomial.Polynomial;
 import lombok.Getter;
 
+import java.math.BigInteger;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.Optional;
@@ -13,6 +14,14 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Field implements Cloneable{
+
+    //TODO: определить методы основных операций над полиномами в расширенном поле
+    //TODO: сложение, умножение, деление, остаток, обратные элементы по операциям, возведение в степень
+    //TODO: проверка на принадлежность полю
+    //TODO: Интерфейс "Операция", где хранятся все перегрузы конкретной операции: с полями и без
+    //TODO: Критерий Эйзенштейна
+    
+
 
     @Getter private int characteristic;
     private int[] elements;
@@ -36,15 +45,6 @@ public class Field implements Cloneable{
 
     public int bringToField(int number){
         return FieldOperations.bringToField(this, number);
-    }
-
-    public Optional<Polynomial> bringToField(Polynomial polynomial){
-        if(polynomial == null){
-            return Optional.empty();
-        }
-        IntStream.range(0, polynomial.getDegree() + 1)
-                .forEach(deg -> polynomial.set(deg, bringToField(polynomial.get(deg))));
-        return Optional.of(polynomial);
     }
 
     public int add(int first, int second){
@@ -85,8 +85,7 @@ public class Field implements Cloneable{
             throws IllegalArgumentException{
         Optional.ofNullable(p).orElseThrow(() ->
                 new IllegalArgumentException(ExceptionMessageConstants.POLYNOMIAL_IS_NULL));
-        //TODO: дописать проверку на неприводимость
-        return false;
+        return FieldOperations.isIrreducible(this, p);
     }
 
     private void generateElements(){

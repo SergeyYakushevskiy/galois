@@ -3,12 +3,13 @@ package dstu.csae.polynomial;
 import dstu.csae.exceptions.EmptyCoefficientsException;
 import dstu.csae.exceptions.ExceptionMessageConstants;
 import dstu.csae.index.Index;
-import lombok.Getter;
 
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 
 public class Polynomial implements Comparable<Polynomial>, Cloneable{
     public static final Polynomial ZERO = new Polynomial(new int[]{0});
@@ -45,7 +46,7 @@ public class Polynomial implements Comparable<Polynomial>, Cloneable{
         return coefficients[degree];
     }
 
-    protected int[] getCoefficients(){
+    public int[] getCoefficients(){
         return Arrays.copyOf(coefficients, coefficients.length);
     }
 
@@ -66,34 +67,37 @@ public class Polynomial implements Comparable<Polynomial>, Cloneable{
         return Optional.of(result);
     }
 
-    public void set(int degree, int coefficient){
-        isInBounds(degree);
-        coefficients[degree] = coefficient;
+    public double evaluate(double x){
+        double result = IntStream.rangeClosed(0, coefficients.length)
+                .mapToDouble(index -> (Math.pow(x, index) * coefficients[index])).sum();
+        return result;
     }
 
-    public void add(Polynomial p){
-        Optional<Polynomial> result = PolynomialOperations.addition(this, p);
-        result.ifPresent(polynomial -> setCoefficients(polynomial.getCoefficients()));
+    public Polynomial set(int degree, int coefficient){
+        Polynomial copy = clone();
+        copy.isInBounds(degree);
+        copy.coefficients[degree] = coefficient;
+        return copy;
     }
 
-    public void subtract(Polynomial p){
-        Optional<Polynomial> result = PolynomialOperations.subtraction(this, p);
-        result.ifPresent(polynomial -> setCoefficients(polynomial.getCoefficients()));
+    public Polynomial add(Polynomial p){
+        return PolynomialOperations.addition(this, p).orElse(p);
     }
 
-    public void multiply(Polynomial p){
-        Optional<Polynomial> result = PolynomialOperations.multiplication(this, p);
-        result.ifPresent(polynomial -> setCoefficients(polynomial.getCoefficients()));
+    public Polynomial subtract(Polynomial p){
+        return PolynomialOperations.subtraction(this, p).orElse(p);
     }
 
-    public void divide(Polynomial p){
-        Optional<Polynomial> result = PolynomialOperations.division(this, p);
-        result.ifPresent(polynomial ->  setCoefficients(polynomial.getCoefficients()));
+    public Polynomial multiply(Polynomial p){
+        return PolynomialOperations.multiplication(this, p).orElse(p);
     }
 
-    public void mod(Polynomial p){
-        Optional<Polynomial> result = PolynomialOperations.remains(this, p);
-        result.ifPresent(polynomial ->  setCoefficients(polynomial.getCoefficients()));
+    public Polynomial divide(Polynomial p){
+        return PolynomialOperations.division(this, p).orElse(p);
+    }
+
+    public Polynomial mod(Polynomial p){
+        return PolynomialOperations.remains(this, p).orElse(p);
     }
 
     private void isInBounds(int degree) throws IndexOutOfBoundsException{
@@ -101,7 +105,7 @@ public class Polynomial implements Comparable<Polynomial>, Cloneable{
             return;
         }
         throw new IndexOutOfBoundsException(String.format(
-                ExceptionMessageConstants.INDEX_OUT_OF_POLYNOMIAL,
+                ExceptionMessageConstants.POLYNOMIAL_INDEX_OUT_OF_BOUNDS,
                 this,
                 degree
         ));
