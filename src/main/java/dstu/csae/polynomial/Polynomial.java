@@ -68,9 +68,8 @@ public class Polynomial implements Comparable<Polynomial>, Cloneable{
     }
 
     public double evaluate(double x){
-        double result = IntStream.rangeClosed(0, coefficients.length)
-                .mapToDouble(index -> (Math.pow(x, index) * coefficients[index])).sum();
-        return result;
+        return IntStream.range(0, coefficients.length)
+                .mapToDouble(degree -> (Math.pow(x, degree) * coefficients[degree])).sum();
     }
 
     public Polynomial set(int degree, int coefficient){

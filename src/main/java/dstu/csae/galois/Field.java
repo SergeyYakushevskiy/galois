@@ -15,14 +15,6 @@ import java.util.stream.IntStream;
 
 public class Field implements Cloneable{
 
-    //TODO: определить методы основных операций над полиномами в расширенном поле
-    //TODO: сложение, умножение, деление, остаток, обратные элементы по операциям, возведение в степень
-    //TODO: проверка на принадлежность полю
-    //TODO: Интерфейс "Операция", где хранятся все перегрузы конкретной операции: с полями и без
-    //TODO: Критерий Эйзенштейна
-    
-
-
     @Getter private int characteristic;
     private int[] elements;
 
@@ -81,7 +73,7 @@ public class Field implements Cloneable{
         return FieldOperations.isInField(this, number);
     }
 
-    public boolean isIrreducible(Polynomial p)
+    public Optional<Boolean> isIrreducible(Polynomial p)
             throws IllegalArgumentException{
         Optional.ofNullable(p).orElseThrow(() ->
                 new IllegalArgumentException(ExceptionMessageConstants.POLYNOMIAL_IS_NULL));

@@ -5,10 +5,11 @@ import dstu.csae.exceptions.ReverseElementEvaluationException;
 import dstu.csae.math.ArithmeticFunctions;
 import dstu.csae.polynomial.Polynomial;
 
-import java.util.ArrayList;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 class FieldOperations extends Operations {
 
@@ -164,31 +165,37 @@ class FieldOperations extends Operations {
         return number;
     }
 
-    static boolean isIrreducible(Field field, Polynomial p){
-        //Либо полином - это произведение полиномов первой степени (когда есть корни уравнения p(x) == 0)
-        // Либо полином - это произведение двух неприводимых в этом же поле полиномов,
-        // сумма старших степений которых равна старшей степени p(x).
-        // сделать проверку на сохранение старшей степени при приведении полинома к полю
-        // 
-        return false;
+    static Optional<Boolean> isIrreducible(Field field, Polynomial p){
+        return Optional.of(true);
     }
 
-    public static ArrayList<Polynomial> factorize(Field field, Polynomial polynomial){
-        ArrayList<Polynomial> multipliers =  new ArrayList<>();
-        Optional.ofNullable(polynomial).ifPresent(p -> {
-
-        });
-        return multipliers;
-    }
-
-    public static Optional<Polynomial> gcd(Field field, Polynomial first, Polynomial second) {
-        if (checkNullable(field, field, second)){
+    /*static Optional<Boolean> isIrreducible(Field field, Polynomial p){
+        if(checkNullable(field, p)){
             return Optional.empty();
         }
-        int[] firstC = first.getCoefficients();
-        int[] secondC = second.getCoefficients();
-        return Optional.of(new Polynomial(gcd(field, firstC, secondC)));
-    }
+        if(Arrays.stream(field.getElements())
+                .anyMatch(elem -> {
+                    Optional<BigInteger> result = p.evaluate(elem);
+                    return result.map(bigInteger ->
+                            bigInteger.equals(BigInteger.ZERO)).orElse(true);
+                })) {
+            return Optional.of(false);
+        }
+        int characteristic = field.getCharacteristic();
+        if(p.get(p.getDegree()) % characteristic == 0){
+            return Optional.of(false);
+        }
+        int finalCharacteristic = characteristic;
+        if(IntStream.range(0, p.getDegree())
+                .anyMatch(coefficient -> coefficient % finalCharacteristic != 0)){
+            return Optional.of(false);
+        }
+        characteristic *= characteristic;
+        if(p.get(0) % characteristic != 0){
+            return Optional.of(false);
+        }
+        return Optional.of(true);
+    }*/
 
     static int bringToField(Field field, int number){
         if(number == 0){
@@ -253,10 +260,6 @@ class FieldOperations extends Operations {
             divisibleDegree--;
         }
         return division;
-    }
-
-    private static int[] gcd(Field field, int[] firstC, int[] secondC){
-        return null;
     }
 
     private static int[] bringToField(Field field, int[] coefficients){
