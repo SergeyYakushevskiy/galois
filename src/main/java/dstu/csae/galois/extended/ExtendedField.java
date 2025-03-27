@@ -2,6 +2,7 @@ package dstu.csae.galois.extended;
 
 import dstu.csae.exceptions.ExceptionMessageConstants;
 import dstu.csae.galois.Field;
+import dstu.csae.index.Index;
 import dstu.csae.polynomial.Polynomial;
 import lombok.Getter;
 
@@ -10,6 +11,8 @@ import java.util.stream.IntStream;
 
 public class ExtendedField {
 
+    public static final Polynomial COMPOSITION_NEUTRAL_ELEM = Polynomial.ZERO;
+    public static final Polynomial MULTIPLICATION_NEUTRAL_ELEM = Polynomial.ONE;
     @Getter
     private final Field field;
     private final int degree;
@@ -68,7 +71,24 @@ public class ExtendedField {
                 .forEach(index -> elements.put(index, new Polynomial(coefficients[index])));
     }
 
+    public Optional<Polynomial> bringToField(Polynomial p){
+        return ExtendedFieldOperations.bringToField(this, p);
+    }
 
+    public boolean isInField(ExtendedField field, Polynomial p){
+        if(Objects.isNull(p)){
+            return false;
+        }
+        return elements.containsValue(p);
+    }
+
+    public Optional<Polynomial> add(Polynomial first, Polynomial second){
+        return ExtendedFieldOperations.addition(this, first, second);
+    }
+
+    public Optional<Polynomial> multiply(Polynomial first, Polynomial second){
+        return ExtendedFieldOperations.multiplication(this, first, second);
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -84,16 +104,13 @@ public class ExtendedField {
 
     @Override
     public String toString() {
-        return field + "(" + polynomial + ')';
+        return String.format("GF(%s%s)(%s)",
+                field.getCharacteristic(),
+                Index.toSuperscript(String.valueOf(degree)),
+                polynomial);
     }
 
     private boolean isInBounds(int number){
         return number > 0 && number < elements.size();
-    }
-
-    public static void main(String[] args) {
-        Field field = new Field(3);
-        ExtendedField ex = new ExtendedField(field, new Polynomial(new int[]{1, 0, 0, 1}));
-
     }
 }

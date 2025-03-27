@@ -6,18 +6,17 @@ import dstu.csae.math.ArithmeticFunctions;
 import dstu.csae.polynomial.Polynomial;
 import lombok.Getter;
 
-import java.math.BigInteger;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Field implements Cloneable{
 
     @Getter private int characteristic;
     private int[] elements;
-
+    public static final int COMPOSITION_NEUTRAL_ELEM = 0;
+    public static final int MULTIPLICATION_NEUTRAL_ELEMENT = 1;
     private Field(){}
 
     public Field(int characteristic){
@@ -39,7 +38,15 @@ public class Field implements Cloneable{
         return FieldOperations.bringToField(this, number);
     }
 
+    public Optional<Polynomial> bringToField(Polynomial polynomial){
+        return FieldOperations.bringToField(this, polynomial);
+    }
+
     public int add(int first, int second){
+        return FieldOperations.addition(this, first, second);
+    }
+
+    public Optional<Polynomial> add(Polynomial first, Polynomial second){
         return FieldOperations.addition(this, first, second);
     }
 
@@ -47,13 +54,33 @@ public class Field implements Cloneable{
         return FieldOperations.subtraction(this, reduced, subtracted);
     }
 
+    public Optional<Polynomial> subtract(Polynomial reduced, Polynomial subtracted){
+        return FieldOperations.subtraction(this, reduced, subtracted);
+    }
+
     public int multiply(int first, int second){
+        return FieldOperations.multiplication(this, first, second);
+    }
+
+    public Optional<Polynomial> multiply(Polynomial first, Polynomial second){
         return FieldOperations.multiplication(this, first, second);
     }
 
     public int divide(int divisible, int divisor)
             throws ArithmeticException{
         return FieldOperations.division(this, divisible, divisor);
+    }
+
+    public Optional<Polynomial> divide(Polynomial divisible, Polynomial divisor){
+        return FieldOperations.division(this, divisible, divisor);
+    }
+
+    public int mod(int divisible, int divisor){
+        return FieldOperations.mod(this, divisible, divisor);
+    }
+
+    public Optional<Polynomial> mod(Polynomial divisible, Polynomial divisor){
+        return FieldOperations.mod(this, divisible, divisor);
     }
 
     public int powMod(int number, int degree){
@@ -71,6 +98,10 @@ public class Field implements Cloneable{
 
     public boolean isInField(int number){
         return FieldOperations.isInField(this, number);
+    }
+
+    public Optional<Boolean> isInField(Polynomial polynomial){
+        return FieldOperations.isInField(this, polynomial);
     }
 
     public Optional<Boolean> isIrreducible(Polynomial p)
@@ -99,11 +130,8 @@ public class Field implements Cloneable{
 
     @Override
     public String toString() {
-        return String.format("GF(%d){%s}",
-                characteristic,
-                Arrays.stream(elements)
-                        .mapToObj(String::valueOf)
-                        .collect(Collectors.joining(", ")));
+        return String.format("GF(%d)",
+                characteristic);
     }
 
     @Override

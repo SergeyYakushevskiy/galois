@@ -5,11 +5,9 @@ import dstu.csae.exceptions.ReverseElementEvaluationException;
 import dstu.csae.math.ArithmeticFunctions;
 import dstu.csae.polynomial.Polynomial;
 
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.IntStream;
 
 class FieldOperations extends Operations {
 
@@ -98,6 +96,19 @@ class FieldOperations extends Operations {
         return Optional.of(new Polynomial(division(field, divisibleC, divisorC)));
     }
 
+    static int mod(Field field, int divisible, int divisor)
+            throws ArithmeticException{
+        if(divisible == 0){
+            return 0;
+        }
+        if(divisor == 0){
+            throw new ArithmeticException(
+                    String.format(ExceptionMessageConstants.NUMBER_DIVIDE_BY_ZERO, divisible));
+        }
+        int division = division(field, divisible, divisor);
+        return subtraction(field, divisible, multiplication(field, divisor, division));
+    }
+
     static Optional<Polynomial> mod(Field field, Polynomial divisible, Polynomial divisor)
             throws IllegalArgumentException{
         if(checkNullable(field, divisible, divisor)){
@@ -105,13 +116,10 @@ class FieldOperations extends Operations {
         }
         int[] divisibleC = divisible.getCoefficients();
         int[] divisorC = divisor.getCoefficients();
-        return Optional.of(new Polynomial(
-                subtraction(field, divisibleC,
-                        multiplication(field, divisorC,
-                                division(field, divisibleC, divisorC)
-                        )
-                )
-        ));
+        int[] rem = division(field, divisibleC, divisorC);
+        rem = multiplication(field, divisorC, rem);
+        rem = subtraction(field, divisibleC, rem);
+        return Optional.of(new Polynomial(rem));
     }
 
     static int inverseOfAddition(Field field, int number){
@@ -203,11 +211,11 @@ class FieldOperations extends Operations {
         }
         int modulo = field.getCharacteristic();
         int multiplication = number % modulo;
-        multiplication = multiplication > 0 ? multiplication : multiplication + modulo;
+        multiplication = multiplication >= 0 ? multiplication : multiplication + modulo;
         return multiplication;
     }
 
-    public Optional<Polynomial> bringToField(Field field, Polynomial polynomial){
+    public static Optional<Polynomial> bringToField(Field field, Polynomial polynomial){
         if(polynomial == null){
             return Optional.empty();
         }
