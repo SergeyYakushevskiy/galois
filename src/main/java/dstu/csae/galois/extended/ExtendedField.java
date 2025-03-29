@@ -6,30 +6,35 @@ import dstu.csae.index.Index;
 import dstu.csae.polynomial.Polynomial;
 import lombok.Getter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 public class ExtendedField {
 
-    public static final Polynomial COMPOSITION_NEUTRAL_ELEM = Polynomial.ZERO;
-    public static final Polynomial MULTIPLICATION_NEUTRAL_ELEM = Polynomial.ONE;
+    public final Polynomial ZERO;
+    public final Polynomial ONE;
     @Getter
     private final Field field;
+    @Getter
     private final int degree;
     @Getter
     private final Polynomial polynomial;
-    private final TreeMap<Integer, Polynomial> elements = new TreeMap<>();
+    private final ArrayList<Polynomial> elements;
+    final int[][] additionMatrix;
+    final  int[][] multiplicationMatrix;
+
 
     public ExtendedField(Field field, Polynomial polynomial)
         throws IllegalArgumentException{
         if(Objects.isNull(field)){
             throw new IllegalArgumentException(ExceptionMessageConstants.FIELD_IS_NULL);
         }
-        Optional<Boolean> checkIrreducible = field.isIrreducible(polynomial);
-        if(checkIrreducible.isEmpty()){
+        if(Objects.isNull(polynomial)){
             throw new IllegalArgumentException(ExceptionMessageConstants.POLYNOMIAL_IS_NULL);
         }
-        if(!checkIrreducible.get()){
+        if(!field.isIrreducible(polynomial)){
             throw new IllegalArgumentException(
                     String.format(ExceptionMessageConstants.POLYNOMIAL_IS_REDUCIBLE,
                             polynomial, field));
@@ -37,23 +42,38 @@ public class ExtendedField {
         this.field = field;
         this.polynomial = polynomial;
         this.degree = polynomial.getDegree();
-        generateElements();
+        elements = generateElements();
+        ZERO = elements.get(0);
+        ONE = elements.get(1);
+        additionMatrix = generateAdditionMatrix();
+        multiplicationMatrix = generateMultiplicationMatrix();
     }
 
+    public int size(){
+        return elements.size();
+    }
 
-    public Optional<Polynomial> get(int index){
+    public Polynomial get(int index){
         if(!isInBounds(index)){
-            return Optional.empty();
+            return null;
         }
-        return Optional.of(elements.get(index));
+        return elements.get(index);
     }
 
-    private void generateElements(){
+    public int indexOf(Polynomial polynomial){
+        if(!isInField(polynomial)){
+            return -1;
+        }
+        return elements.indexOf(polynomial);
+    }
+
+    private ArrayList<Polynomial> generateElements(){
         int characteristic = field.getCharacteristic();
         int elementCount = (int)Math.pow(field.getCharacteristic(), degree);
         int[][] coefficients = new int[elementCount][degree];
         int period = 1;
         int currentDegree = 0;
+        ArrayList<Polynomial> elements = new ArrayList<>();
         while(currentDegree < degree){
             int currentElementIndex = 0;
             int currentValue = 0;
@@ -68,26 +88,122 @@ public class ExtendedField {
             currentDegree ++;
         }
         IntStream.range(0, coefficients.length)
-                .forEach(index -> elements.put(index, new Polynomial(coefficients[index])));
+                .forEach(index -> elements.add(new Polynomial(coefficients[index])));
+        return elements;
     }
 
-    public Optional<Polynomial> bringToField(Polynomial p){
-        return ExtendedFieldOperations.bringToField(this, p);
-    }
-
-    public boolean isInField(ExtendedField field, Polynomial p){
-        if(Objects.isNull(p)){
-            return false;
+    private int[][] generateAdditionMatrix(){
+        int[][] additionMatrix = new int[elements.size()][elements.size()];
+        for(int i = 0; i < elements.size(); i ++){
+            for(int j = 0; j < elements.size(); j ++){
+                Optional<Polynomial> addition = field.add(elements.get(i), elements.get(j));
+                if(addition.isPresent()){
+                    Polynomial added = addition.get();
+                    added = field.mod(added, polynomial).orElse(Polynomial.ZERO);
+                    additionMatrix[i][j] = elements.indexOf(added);
+                }
+            }
         }
-        return elements.containsValue(p);
+        return additionMatrix;
     }
 
-    public Optional<Polynomial> add(Polynomial first, Polynomial second){
+    private int[][] generateMultiplicationMatrix(){
+        int[][] multiplicationMatrix = new int[elements.size()][elements.size()];
+        for(int i = 0; i < elements.size(); i ++){
+            for(int j = 0; j < elements.size(); j ++){
+                Optional<Polynomial> multiplication = field.multiply(elements.get(i), elements.get(j));
+                if(multiplication.isPresent()){
+                    Polynomial multiplied = multiplication.get();
+                    multiplied = field.mod(multiplied, polynomial).orElse(Polynomial.ONE);
+                    multiplicationMatrix[i][j] = elements.indexOf(multiplied);
+                }
+            }
+        }
+        return multiplicationMatrix;
+    }
+
+    public int add(int first, int second){
         return ExtendedFieldOperations.addition(this, first, second);
     }
 
-    public Optional<Polynomial> multiply(Polynomial first, Polynomial second){
+    public Optional<Polynomial> add(Polynomial first, Polynomial second){
+        return Optional.ofNullable(ExtendedFieldOperations.addition(this, first, second));
+    }
+
+    public int subtraction(int reduced, int subtracted){
+        return ExtendedFieldOperations.subtraction(this, reduced, subtracted);
+    }
+
+    public Optional<Polynomial> subtraction(Polynomial reduced, Polynomial subtracted){
+        return Optional.ofNullable(ExtendedFieldOperations.subtraction(this, reduced, subtracted));
+    }
+
+    public int multiply(int first, int second){
         return ExtendedFieldOperations.multiplication(this, first, second);
+    }
+
+    public Optional<Polynomial> multiply(Polynomial first, Polynomial second){
+        return Optional.ofNullable(ExtendedFieldOperations.multiplication(this, first, second));
+    }
+
+    public int divide(int divisible, int divisor){
+        return ExtendedFieldOperations.division(this, divisible, divisor);
+    }
+
+    public Optional<Polynomial> divide(Polynomial divisible, Polynomial divisor){
+        return Optional.ofNullable(ExtendedFieldOperations.division(this, divisible, divisor));
+    }
+
+    public int powMod(int number, int degree){
+        return ExtendedFieldOperations.powMod(this, number, degree);
+    }
+
+    public Optional<Polynomial> powMod(Polynomial polynomial, int degree){
+        return Optional.ofNullable(ExtendedFieldOperations.powMod(this, polynomial, degree));
+    }
+
+    public int bringToField(int number){
+        return ExtendedFieldOperations.bringToField(this, number);
+    }
+
+    public Polynomial bringToField(Polynomial p){
+        return Optional.ofNullable(ExtendedFieldOperations.bringToField(this, p))
+                .orElse(get(0));
+    }
+
+    public int inverseOfAddition(int element){
+        return ExtendedFieldOperations.inverseOfAddition(this, element);
+    }
+
+    public Optional<Polynomial> inverseOfAddition(Polynomial polynomial){
+        return Optional.ofNullable(ExtendedFieldOperations.inverseOfAddition(this, polynomial));
+    }
+
+    public int inverseOfMultiplication(int element){
+        return ExtendedFieldOperations.inverseOfMultiplication(this, element);
+    }
+
+    public Optional<Polynomial> inverseOfMultiplication(Polynomial polynomial){
+        return Optional.ofNullable(ExtendedFieldOperations.inverseOfMultiplication(this, polynomial));
+    }
+
+    public boolean isInField(Polynomial polynomial){
+        if(Objects.isNull(polynomial)){
+            return false;
+        }
+        return elements.contains(polynomial);
+    }
+
+    public boolean isInBounds(int index){
+        return ExtendedFieldOperations.isInBounds(this, index);
+    }
+
+    public boolean isPrimitive(int element){
+        return ExtendedFieldOperations.isPrimitive(this, element);
+    }
+
+    public boolean isPrimitive(Polynomial polynomial){
+        return ExtendedFieldOperations.isPrimitive(this, polynomial);
     }
 
     @Override
@@ -110,7 +226,4 @@ public class ExtendedField {
                 polynomial);
     }
 
-    private boolean isInBounds(int number){
-        return number > 0 && number < elements.size();
-    }
 }

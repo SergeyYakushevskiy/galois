@@ -15,7 +15,7 @@ public class Field implements Cloneable{
 
     @Getter private int characteristic;
     private int[] elements;
-    public static final int COMPOSITION_NEUTRAL_ELEM = 0;
+    public static final int ADDITION_NEUTRAL_ELEMENT = 0;
     public static final int MULTIPLICATION_NEUTRAL_ELEMENT = 1;
     private Field(){}
 
@@ -39,7 +39,7 @@ public class Field implements Cloneable{
     }
 
     public Optional<Polynomial> bringToField(Polynomial polynomial){
-        return FieldOperations.bringToField(this, polynomial);
+        return Optional.ofNullable(FieldOperations.bringToField(this, polynomial));
     }
 
     public int add(int first, int second){
@@ -47,7 +47,7 @@ public class Field implements Cloneable{
     }
 
     public Optional<Polynomial> add(Polynomial first, Polynomial second){
-        return FieldOperations.addition(this, first, second);
+        return Optional.ofNullable(FieldOperations.addition(this, first, second));
     }
 
     public int subtract(int reduced, int subtracted){
@@ -55,7 +55,7 @@ public class Field implements Cloneable{
     }
 
     public Optional<Polynomial> subtract(Polynomial reduced, Polynomial subtracted){
-        return FieldOperations.subtraction(this, reduced, subtracted);
+        return Optional.ofNullable(FieldOperations.subtraction(this, reduced, subtracted));
     }
 
     public int multiply(int first, int second){
@@ -63,7 +63,7 @@ public class Field implements Cloneable{
     }
 
     public Optional<Polynomial> multiply(Polynomial first, Polynomial second){
-        return FieldOperations.multiplication(this, first, second);
+        return Optional.ofNullable(FieldOperations.multiplication(this, first, second));
     }
 
     public int divide(int divisible, int divisor)
@@ -72,7 +72,7 @@ public class Field implements Cloneable{
     }
 
     public Optional<Polynomial> divide(Polynomial divisible, Polynomial divisor){
-        return FieldOperations.division(this, divisible, divisor);
+        return Optional.ofNullable(FieldOperations.division(this, divisible, divisor));
     }
 
     public int mod(int divisible, int divisor){
@@ -80,7 +80,7 @@ public class Field implements Cloneable{
     }
 
     public Optional<Polynomial> mod(Polynomial divisible, Polynomial divisor){
-        return FieldOperations.mod(this, divisible, divisor);
+        return Optional.ofNullable(FieldOperations.mod(this, divisible, divisor));
     }
 
     public int powMod(int number, int degree){
@@ -100,15 +100,15 @@ public class Field implements Cloneable{
         return FieldOperations.isInField(this, number);
     }
 
-    public Optional<Boolean> isInField(Polynomial polynomial){
+    public boolean isInField(Polynomial polynomial){
         return FieldOperations.isInField(this, polynomial);
     }
 
-    public Optional<Boolean> isIrreducible(Polynomial p)
+    public boolean isIrreducible(Polynomial polynomial)
             throws IllegalArgumentException{
-        Optional.ofNullable(p).orElseThrow(() ->
+        Optional.ofNullable(polynomial).orElseThrow(() ->
                 new IllegalArgumentException(ExceptionMessageConstants.POLYNOMIAL_IS_NULL));
-        return FieldOperations.isIrreducible(this, p);
+        return FieldOperations.isIrreducible(this, polynomial);
     }
 
     private void generateElements(){

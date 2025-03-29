@@ -8,13 +8,11 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 public class Polynomial implements Comparable<Polynomial>, Cloneable{
     public static final Polynomial ZERO = new Polynomial(new int[]{0});
     public static final Polynomial ONE = new Polynomial(new int[]{1});
-
 
     private int[] coefficients;
 
@@ -42,7 +40,13 @@ public class Polynomial implements Comparable<Polynomial>, Cloneable{
     }
 
     public int get(int degree) throws IndexOutOfBoundsException{
-        isInBounds(degree);
+        if(!isInBounds(degree)){
+            throw new IndexOutOfBoundsException(String.format(
+                    ExceptionMessageConstants.POLYNOMIAL_INDEX_OUT_OF_BOUNDS,
+                    this,
+                    degree
+            ));
+        };
         return coefficients[degree];
     }
 
@@ -79,35 +83,28 @@ public class Polynomial implements Comparable<Polynomial>, Cloneable{
         return copy;
     }
 
-    public Polynomial add(Polynomial p){
-        return PolynomialOperations.addition(this, p).orElse(p);
+    public Optional<Polynomial> add(Polynomial p){
+        return Optional.ofNullable(PolynomialOperations.addition(this, p));
     }
 
-    public Polynomial subtract(Polynomial p){
-        return PolynomialOperations.subtraction(this, p).orElse(p);
+    public Optional<Polynomial> subtract(Polynomial p){
+        return Optional.ofNullable(PolynomialOperations.subtraction(this, p));
     }
 
-    public Polynomial multiply(Polynomial p){
-        return PolynomialOperations.multiplication(this, p).orElse(p);
+    public Optional<Polynomial> multiply(Polynomial p){
+        return Optional.ofNullable(PolynomialOperations.multiplication(this, p));
     }
 
-    public Polynomial divide(Polynomial p){
-        return PolynomialOperations.division(this, p).orElse(p);
+    public Optional<Polynomial> divide(Polynomial p){
+        return Optional.ofNullable(PolynomialOperations.division(this, p));
     }
 
-    public Polynomial mod(Polynomial p){
-        return PolynomialOperations.remains(this, p).orElse(p);
+    public Optional<Polynomial> mod(Polynomial p){
+        return Optional.ofNullable(PolynomialOperations.mod(this, p));
     }
 
-    private void isInBounds(int degree) throws IndexOutOfBoundsException{
-        if(degree >= 0 && degree < coefficients.length) {
-            return;
-        }
-        throw new IndexOutOfBoundsException(String.format(
-                ExceptionMessageConstants.POLYNOMIAL_INDEX_OUT_OF_BOUNDS,
-                this,
-                degree
-        ));
+    public boolean isInBounds(int degree) throws IndexOutOfBoundsException{
+        return degree >= 0 && degree < coefficients.length;
     }
 
     public void removeLastZero(){
@@ -185,7 +182,8 @@ public class Polynomial implements Comparable<Polynomial>, Cloneable{
         if(this.equals(o)){
             return 0;
         }
-        Polynomial division = PolynomialOperations.division(this, o).orElse(Polynomial.ZERO);
+        Polynomial division = Optional.ofNullable(PolynomialOperations.division(this, o))
+                .orElse(Polynomial.ZERO);
         int degree = division.getDegree();
         return Integer.compare(division.get(degree), 0);
     }

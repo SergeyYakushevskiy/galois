@@ -6,8 +6,6 @@ import java.util.stream.IntStream;
 
 public class ArithmeticFunctions {
 
-
-
     public static int getEulerFunction(int number){
         if(number == 1){
             return 1;
@@ -20,7 +18,7 @@ public class ArithmeticFunctions {
                 .stream()
                 .reduce(1, (accumulator, num) ->
                         accumulator * (num == 1 ? getEulerFunction(num) :
-                                (int) (Math.pow(number, multipliers.get(num) - 1) * (num - 1)))
+                                (int) (Math.pow(num, multipliers.get(num) - 1) * (num - 1)))
                 );
     }
 

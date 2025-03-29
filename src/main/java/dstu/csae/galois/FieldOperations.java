@@ -7,7 +7,6 @@ import dstu.csae.polynomial.Polynomial;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Optional;
 
 class FieldOperations extends Operations {
 
@@ -23,27 +22,27 @@ class FieldOperations extends Operations {
         return  bringToField(field, first + second);
     }
 
-    static Optional<Polynomial> addition(Field field, Polynomial first, Polynomial second){
+    static Polynomial addition(Field field, Polynomial first, Polynomial second){
         if(checkNullable(first, second)){
-            return Optional.empty();
+            return null;
         }
         int[] firstC = first.getCoefficients();
         int[] secondC = second.getCoefficients();
-        return Optional.of(new Polynomial(addition(field, firstC, secondC)));
+        return new Polynomial(addition(field, firstC, secondC));
     }
 
     static int subtraction(Field field, int reduced, int subtracted){
         return addition(field, reduced, inverseOfAddition(field, subtracted));
     }
 
-    static Optional<Polynomial> subtraction(Field field, Polynomial reduced, Polynomial subtracted){
-        if(checkNullable(reduced, subtracted)){
-            return Optional.empty();
+    static Polynomial subtraction(Field field, Polynomial reduced, Polynomial subtracted){
+        if(checkNullable(field, reduced, subtracted)){
+            return null;
         }
 
         int[] reducedC = reduced.getCoefficients();
         int[] subtractedC = subtracted.getCoefficients();
-        return Optional.of(new Polynomial(subtraction(field, reducedC, subtractedC)));
+        return new Polynomial(subtraction(field, reducedC, subtractedC));
     }
 
     static int multiplication(Field field, int first, int second){
@@ -55,16 +54,16 @@ class FieldOperations extends Operations {
         return bringToField(field, first * second);
     }
 
-    static Optional<Polynomial> multiplication(Field field, Polynomial first, Polynomial second){
-        if(checkNullable(first, second)){
-            return Optional.empty();
+    static Polynomial multiplication(Field field, Polynomial first, Polynomial second){
+        if(checkNullable(field, first, second)){
+            return null;
         }
         if(first.equals(Polynomial.ZERO) || second.equals(Polynomial.ZERO)){
-            return Optional.of(Polynomial.ZERO.clone());
+            return Polynomial.ZERO.clone();
         }
         int[] firstC = first.getCoefficients();
         int[] secondC = second.getCoefficients();
-        return Optional.of(new Polynomial(multiplication(field, firstC, secondC)));
+        return new Polynomial(multiplication(field, firstC, secondC));
     }
 
     static int division(Field field, int divisible, int divisor)
@@ -80,20 +79,20 @@ class FieldOperations extends Operations {
         return multiplication(field, divisible, divisor);
     }
 
-    static Optional<Polynomial> division(Field field, Polynomial divisible, Polynomial divisor)
+    static Polynomial division(Field field, Polynomial divisible, Polynomial divisor)
             throws IllegalArgumentException{
         if(checkNullable(field, divisible, divisor)){
-            return Optional.empty();
+            return null;
         }
         if(divisor.equals(Polynomial.ZERO)) {
             throw new IllegalArgumentException(ExceptionMessageConstants.DIVIDE_BY_ZERO);
         }
         if(divisible.equals(Polynomial.ZERO)){
-            return Optional.of(Polynomial.ZERO.clone());
+            return Polynomial.ZERO.clone();
         }
         int[] divisibleC = divisible.getCoefficients();
         int[] divisorC = divisor.getCoefficients();
-        return Optional.of(new Polynomial(division(field, divisibleC, divisorC)));
+        return new Polynomial(division(field, divisibleC, divisorC));
     }
 
     static int mod(Field field, int divisible, int divisor)
@@ -109,17 +108,17 @@ class FieldOperations extends Operations {
         return subtraction(field, divisible, multiplication(field, divisor, division));
     }
 
-    static Optional<Polynomial> mod(Field field, Polynomial divisible, Polynomial divisor)
+    static Polynomial mod(Field field, Polynomial divisible, Polynomial divisor)
             throws IllegalArgumentException{
         if(checkNullable(field, divisible, divisor)){
-            return Optional.empty();
+            return null;
         }
         int[] divisibleC = divisible.getCoefficients();
         int[] divisorC = divisor.getCoefficients();
         int[] rem = division(field, divisibleC, divisorC);
         rem = multiplication(field, divisorC, rem);
         rem = subtraction(field, divisibleC, rem);
-        return Optional.of(new Polynomial(rem));
+        return new Polynomial(rem);
     }
 
     static int inverseOfAddition(Field field, int number){
@@ -173,37 +172,9 @@ class FieldOperations extends Operations {
         return number;
     }
 
-    static Optional<Boolean> isIrreducible(Field field, Polynomial p){
-        return Optional.of(true);
+    static boolean isIrreducible(Field field, Polynomial polynomial){
+        return !checkNullable(field, polynomial);
     }
-
-    /*static Optional<Boolean> isIrreducible(Field field, Polynomial p){
-        if(checkNullable(field, p)){
-            return Optional.empty();
-        }
-        if(Arrays.stream(field.getElements())
-                .anyMatch(elem -> {
-                    Optional<BigInteger> result = p.evaluate(elem);
-                    return result.map(bigInteger ->
-                            bigInteger.equals(BigInteger.ZERO)).orElse(true);
-                })) {
-            return Optional.of(false);
-        }
-        int characteristic = field.getCharacteristic();
-        if(p.get(p.getDegree()) % characteristic == 0){
-            return Optional.of(false);
-        }
-        int finalCharacteristic = characteristic;
-        if(IntStream.range(0, p.getDegree())
-                .anyMatch(coefficient -> coefficient % finalCharacteristic != 0)){
-            return Optional.of(false);
-        }
-        characteristic *= characteristic;
-        if(p.get(0) % characteristic != 0){
-            return Optional.of(false);
-        }
-        return Optional.of(true);
-    }*/
 
     static int bringToField(Field field, int number){
         if(number == 0){
@@ -215,24 +186,24 @@ class FieldOperations extends Operations {
         return multiplication;
     }
 
-    public static Optional<Polynomial> bringToField(Field field, Polynomial polynomial){
+    public static Polynomial bringToField(Field field, Polynomial polynomial){
         if(polynomial == null){
-            return Optional.empty();
+            return null;
         }
         int[] coefficients = bringToField(field, polynomial.getCoefficients());
-        return Optional.of(new Polynomial(coefficients));
+        return new Polynomial(coefficients);
     }
 
     static boolean isInField(Field field, int number){
         return number >= 0 && number < field.getCharacteristic();
     }
 
-    static Optional<Boolean> isInField(Field field, Polynomial polynomial){
+    static boolean isInField(Field field, Polynomial polynomial){
         if(polynomial == null){
-            return Optional.empty();
+            return false;
         }
-        return Optional.of(Arrays.stream(polynomial.getCoefficients())
-                .allMatch(x -> isInField(field, x)));
+        return Arrays.stream(polynomial.getCoefficients())
+                .allMatch(x -> isInField(field, x));
     }
 
     private static int[] addition(Field field, int[] firstC, int[] secondC){

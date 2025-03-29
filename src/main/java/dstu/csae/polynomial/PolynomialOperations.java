@@ -3,42 +3,43 @@ package dstu.csae.polynomial;
 import dstu.csae.exceptions.ExceptionMessageConstants;
 import dstu.csae.galois.Operations;
 
-import java.util.Optional;
+import java.util.Arrays;
+import java.util.Objects;
 
 public class PolynomialOperations extends Operations {
 
-    public static Optional<Polynomial> addition(Polynomial first, Polynomial second){
-        if(first == null || second == null){
-            return Optional.empty();
+    static Polynomial addition(Polynomial first, Polynomial second){
+        if(checkNullable(first, second)){
+            return null;
         }
         int[] firstC = Polynomial.removeLastZero(first);
         int[] secondC = Polynomial.removeLastZero(second);
 
-        return Optional.of(new Polynomial(addition(firstC, secondC)));
+        return new Polynomial(addition(firstC, secondC));
     }
 
-    public static Optional<Polynomial> subtraction(Polynomial reduced, Polynomial subtracted){
-        if(reduced == null || subtracted == null){
-            return Optional.empty();
+    static Polynomial subtraction(Polynomial reduced, Polynomial subtracted){
+        if(checkNullable(reduced, subtracted)){
+            return null;
         }
         int[] reducedC = Polynomial.removeLastZero(reduced);
         int[] subtractedC = Polynomial.removeLastZero(subtracted);
-        return Optional.of(new Polynomial(subtraction(reducedC, subtractedC)));
+        return new Polynomial(subtraction(reducedC, subtractedC));
     }
 
 
-    public static Optional<Polynomial> multiplication (Polynomial first, Polynomial second){
-        if(first == null || second == null){
-            return Optional.empty();
+    static Polynomial multiplication (Polynomial first, Polynomial second){
+        if(checkNullable(first, second)){
+            return null;
         }
         int[] firstC = first.getCoefficients();
         int[] secondC = second.getCoefficients();
-        return Optional.of(new Polynomial(multiplication(firstC, secondC)));
+        return new Polynomial(multiplication(firstC, secondC));
     }
 
-    public static Optional<Polynomial> division(Polynomial divisible, Polynomial divisor){
-        if(divisible == null || divisor == null){
-            return Optional.empty();
+    static Polynomial division(Polynomial divisible, Polynomial divisor){
+        if(checkNullable(divisible, divisor)){
+            return null;
         }
         if(divisor.getDegree() == 0){
             throw new ArithmeticException(String.format(
@@ -47,16 +48,16 @@ public class PolynomialOperations extends Operations {
             ));
         }
         if ((divisible.getDegree() == 0) || divisible.getDegree() < divisor.getDegree()){
-            return Optional.of(new Polynomial());
+            return Polynomial.ZERO.clone();
         }
         int[] divisibleC = Polynomial.removeLastZero(divisible);
         int[] divisorC = Polynomial.removeLastZero(divisor);
-        return Optional.of(new Polynomial(division(divisibleC, divisorC)));
+        return new Polynomial(division(divisibleC, divisorC));
     }
 
-    public static Optional<Polynomial> remains(Polynomial divisible, Polynomial divisor){
-        if(divisible == null || divisor == null){
-            return Optional.empty();
+    static Polynomial mod(Polynomial divisible, Polynomial divisor){
+        if(checkNullable(divisible, divisor)){
+            return null;
         }
         if(divisor.getDegree() == 0){
             throw new ArithmeticException(String.format(
@@ -65,20 +66,22 @@ public class PolynomialOperations extends Operations {
             ));
         }
         if ((divisible.getDegree() == 0)){
-            return Optional.of(new Polynomial());
+            return Polynomial.ZERO.clone();
         }
         if(divisible.getDegree() < divisor.getDegree()){
-            return Optional.of(divisible.clone());
+            return divisible.clone();
         }
         int[] divisibleC = Polynomial.removeLastZero(divisible);
         int[] divisorC = Polynomial.removeLastZero(divisor);
-        return Optional.of(new Polynomial(
+        return new Polynomial(
                 subtraction(divisibleC,
                         multiplication(
                                 division(divisibleC, divisorC),
                                 divisorC
-                        ))));
+                        )));
     }
 
-
+    private static boolean checkNullable(Object ... objects){
+        return Arrays.stream(objects).anyMatch(Objects::isNull);
+    }
 }
