@@ -24,8 +24,10 @@ public class Polynomial implements Comparable<Polynomial>, Cloneable{
         this(new int[degree + 1]);
     }
 
+
     public Polynomial(int[] coefficients) throws EmptyCoefficientsException{
         setCoefficients(coefficients);
+
     }
 
     protected void setCoefficients(int[] coefficients) throws EmptyCoefficientsException{
@@ -135,8 +137,7 @@ public class Polynomial implements Comparable<Polynomial>, Cloneable{
         return Arrays.hashCode(removeLastZero(this));
     }
 
-    @Override
-    public String toString(){
+    public String toString(char symbol){
         int start = 0;
         while(coefficients[start] == 0){
             start ++;
@@ -148,7 +149,7 @@ public class Polynomial implements Comparable<Polynomial>, Cloneable{
         StringBuilder out = new StringBuilder(String.valueOf(coefficients[start]));
         String monomial;
         if(start != 0){
-            monomial = "x" + Index.toSuperscript(String.valueOf(start));
+            monomial = symbol + Index.toSuperscript(String.valueOf(start));
             out.append(monomial);
         }
         for(int index = start + 1; index < coefficients.length; index ++){
@@ -157,10 +158,15 @@ public class Polynomial implements Comparable<Polynomial>, Cloneable{
                 continue;
             }
             monomial = elem > 0 ? "+" : "";
-            monomial += elem + "x" + Index.toSuperscript(String.valueOf(index));
+            monomial += elem + symbol + Index.toSuperscript(String.valueOf(index));
             out.append(monomial);
         }
         return out.toString();
+    }
+
+    @Override
+    public String toString(){
+        return toString('x');
     }
 
     @Override
