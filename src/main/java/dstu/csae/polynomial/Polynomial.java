@@ -149,7 +149,7 @@ public class Polynomial implements Comparable<Polynomial>, Cloneable{
         StringBuilder out = new StringBuilder(String.valueOf(coefficients[start]));
         String monomial;
         if(start != 0){
-            monomial = symbol + Index.toSuperscript(String.valueOf(start));
+            monomial = String.valueOf(symbol) + Index.toSuperscript(String.valueOf(start));
             out.append(monomial);
         }
         for(int index = start + 1; index < coefficients.length; index ++){
@@ -158,7 +158,7 @@ public class Polynomial implements Comparable<Polynomial>, Cloneable{
                 continue;
             }
             monomial = elem > 0 ? "+" : "";
-            monomial += elem + symbol + Index.toSuperscript(String.valueOf(index));
+            monomial += elem + String.valueOf(symbol) + Index.toSuperscript(String.valueOf(index));
             out.append(monomial);
         }
         return out.toString();
