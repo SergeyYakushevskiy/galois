@@ -5,57 +5,58 @@ import dstu.csae.exceptions.ReverseElementEvaluationException;
 import dstu.csae.math.ArithmeticFunctions;
 import dstu.csae.polynomial.Polynomial;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;
 
 class FieldOperations extends Operations {
 
-    static int addition(Field field, int first, int second){
+    static int addition(GaloisField galoisField, int first, int second){
         if(first == 0 && second == 0){
             return 0;
         }
-        first = bringToField(field, first);
-        second = bringToField(field, second);
+        first = bringToField(galoisField, first);
+        second = bringToField(galoisField, second);
         if(first == 0 || second == 0){
             return Math.max(first, second);
         }
-        return  bringToField(field, first + second);
+        return  bringToField(galoisField, first + second);
     }
 
-    static Polynomial addition(Field field, Polynomial first, Polynomial second){
+    static Polynomial addition(GaloisField galoisField, Polynomial first, Polynomial second){
         if(checkNullable(first, second)){
             return null;
         }
         int[] firstC = first.getCoefficients();
         int[] secondC = second.getCoefficients();
-        return new Polynomial(addition(field, firstC, secondC));
+        return new Polynomial(addition(galoisField, firstC, secondC));
     }
 
-    static int subtraction(Field field, int reduced, int subtracted){
-        return addition(field, reduced, inverseOfAddition(field, subtracted));
+    static int subtraction(GaloisField galoisField, int reduced, int subtracted){
+        return addition(galoisField, reduced, inverseOfAddition(galoisField, subtracted));
     }
 
-    static Polynomial subtraction(Field field, Polynomial reduced, Polynomial subtracted){
-        if(checkNullable(field, reduced, subtracted)){
+    static Polynomial subtraction(GaloisField galoisField, Polynomial reduced, Polynomial subtracted){
+        if(checkNullable(galoisField, reduced, subtracted)){
             return null;
         }
 
         int[] reducedC = reduced.getCoefficients();
         int[] subtractedC = subtracted.getCoefficients();
-        return new Polynomial(subtraction(field, reducedC, subtractedC));
+        return new Polynomial(subtraction(galoisField, reducedC, subtractedC));
     }
 
-    static int multiplication(Field field, int first, int second){
+    static int multiplication(GaloisField galoisField, int first, int second){
         if(first == 0 || second == 0){
             return 0;
         }
-        first = bringToField(field, first);
-        second = bringToField(field, second);
-        return bringToField(field, first * second);
+        first = bringToField(galoisField, first);
+        second = bringToField(galoisField, second);
+        return bringToField(galoisField, first * second);
     }
 
-    static Polynomial multiplication(Field field, Polynomial first, Polynomial second){
-        if(checkNullable(field, first, second)){
+    static Polynomial multiplication(GaloisField galoisField, Polynomial first, Polynomial second){
+        if(checkNullable(galoisField, first, second)){
             return null;
         }
         if(first.equals(Polynomial.ZERO) || second.equals(Polynomial.ZERO)){
@@ -63,10 +64,10 @@ class FieldOperations extends Operations {
         }
         int[] firstC = first.getCoefficients();
         int[] secondC = second.getCoefficients();
-        return new Polynomial(multiplication(field, firstC, secondC));
+        return new Polynomial(multiplication(galoisField, firstC, secondC));
     }
 
-    static int division(Field field, int divisible, int divisor)
+    static int division(GaloisField galoisField, int divisible, int divisor)
             throws ArithmeticException{
         if(divisible == 0){
             return 0;
@@ -75,13 +76,13 @@ class FieldOperations extends Operations {
             throw new ArithmeticException(
                     String.format(ExceptionMessageConstants.NUMBER_DIVIDE_BY_ZERO, divisible));
         }
-        divisor = inverseOfMultiplication(field, divisor);
-        return multiplication(field, divisible, divisor);
+        divisor = inverseOfMultiplication(galoisField, divisor);
+        return multiplication(galoisField, divisible, divisor);
     }
 
-    static Polynomial division(Field field, Polynomial divisible, Polynomial divisor)
+    static Polynomial division(GaloisField galoisField, Polynomial divisible, Polynomial divisor)
             throws IllegalArgumentException{
-        if(checkNullable(field, divisible, divisor)){
+        if(checkNullable(galoisField, divisible, divisor)){
             return null;
         }
         if(divisor.equals(Polynomial.ZERO)) {
@@ -92,10 +93,10 @@ class FieldOperations extends Operations {
         }
         int[] divisibleC = divisible.getCoefficients();
         int[] divisorC = divisor.getCoefficients();
-        return new Polynomial(division(field, divisibleC, divisorC));
+        return new Polynomial(division(galoisField, divisibleC, divisorC));
     }
 
-    static int mod(Field field, int divisible, int divisor)
+    static int mod(GaloisField galoisField, int divisible, int divisor)
             throws ArithmeticException{
         if(divisible == 0){
             return 0;
@@ -104,50 +105,50 @@ class FieldOperations extends Operations {
             throw new ArithmeticException(
                     String.format(ExceptionMessageConstants.NUMBER_DIVIDE_BY_ZERO, divisible));
         }
-        int division = division(field, divisible, divisor);
-        return subtraction(field, divisible, multiplication(field, divisor, division));
+        int division = division(galoisField, divisible, divisor);
+        return subtraction(galoisField, divisible, multiplication(galoisField, divisor, division));
     }
 
-    static Polynomial mod(Field field, Polynomial divisible, Polynomial divisor)
+    static Polynomial mod(GaloisField galoisField, Polynomial divisible, Polynomial divisor)
             throws IllegalArgumentException{
-        if(checkNullable(field, divisible, divisor)){
+        if(checkNullable(galoisField, divisible, divisor)){
             return null;
         }
         int[] divisibleC = divisible.getCoefficients();
         int[] divisorC = divisor.getCoefficients();
-        int[] rem = division(field, divisibleC, divisorC);
-        rem = multiplication(field, divisorC, rem);
-        rem = subtraction(field, divisibleC, rem);
+        int[] rem = division(galoisField, divisibleC, divisorC);
+        rem = multiplication(galoisField, divisorC, rem);
+        rem = subtraction(galoisField, divisibleC, rem);
         return new Polynomial(rem);
     }
 
-    static int inverseOfAddition(Field field, int number){
+    static int inverseOfAddition(GaloisField galoisField, int number){
         if(number == 0){
             return 0;
         }
-        number = bringToField(field, number);
-        return field.getCharacteristic() - number;
+        number = bringToField(galoisField, number);
+        return galoisField.getCharacteristic() - number;
     }
 
-    static int inverseOfMultiplication(Field field, int number)
+    static int inverseOfMultiplication(GaloisField galoisField, int number)
             throws ReverseElementEvaluationException{
         if (number == 0){
             throw new ReverseElementEvaluationException(
                     String.format(ExceptionMessageConstants.REVERSE_ELEMENT_DOES_NOT_EXIST, number)
             );
         }
-        if(!isInField(field, number)) {
-            number = bringToField(field, number);
+        if(!isInField(galoisField, number)) {
+            number = bringToField(galoisField, number);
         }
-        int mod = field.getCharacteristic();
+        int mod = galoisField.getCharacteristic();
         int phi = ArithmeticFunctions.getEulerFunction(mod);
-        number = powMod(field, number, phi - 1);
-        return bringToField(field, number);
+        number = powMod(galoisField, number, phi - 1);
+        return bringToField(galoisField, number);
     }
 
-    static int powMod(Field field, int number, int degree){
-        if(!isInField(field, number)){
-            number = bringToField(field, number);
+    static int powMod(GaloisField galoisField, int number, int degree){
+        if(!isInField(galoisField, number)){
+            number = bringToField(galoisField, number);
         }
         if(number == 0 || number == 1){
             return number;
@@ -156,77 +157,87 @@ class FieldOperations extends Operations {
             return 1;
         }
         if(degree < 0){
-            number = inverseOfMultiplication(field, number);
-            return powMod(field, number, -degree);
+            number = inverseOfMultiplication(galoisField, number);
+            return powMod(galoisField, number, -degree);
         }
         int multiplier = 1;
         while(degree != 1){
             if(degree % 2 != 0){
-                multiplier = bringToField(field, multiplier * number);
+                multiplier = bringToField(galoisField, multiplier * number);
                 degree --;
             }
-            number = bringToField(field, (int)Math.pow(number, 2));
+            number = bringToField(galoisField, (int)Math.pow(number, 2));
             degree /= 2;
         }
-        number = bringToField(field, multiplier * number);
+        number = bringToField(galoisField, multiplier * number);
         return number;
     }
 
-    static boolean isIrreducible(Field field, Polynomial polynomial){
-        return !checkNullable(field, polynomial);
+    static boolean isIrreducible(GaloisField galoisField, Polynomial polynomial){
+        return !checkNullable(galoisField, polynomial);
     }
 
-    static int bringToField(Field field, int number){
+    static int bringToField(GaloisField galoisField, int number){
         if(number == 0){
             return 0;
         }
-        int modulo = field.getCharacteristic();
+        int modulo = galoisField.getCharacteristic();
         int multiplication = number % modulo;
         multiplication = multiplication >= 0 ? multiplication : multiplication + modulo;
         return multiplication;
     }
 
-    public static Polynomial bringToField(Field field, Polynomial polynomial){
+    static int bringToField(GaloisField galoisField, BigInteger number){
+        if(checkNullable(galoisField, number)){
+            return 0;
+        }
+        int modulo = galoisField.getCharacteristic();
+        int multiplication = number.mod(BigInteger.valueOf(modulo)).intValue();
+        multiplication = multiplication >= 0 ? multiplication : multiplication + modulo;
+        return multiplication;
+    }
+
+    public static Polynomial bringToField(GaloisField galoisField, Polynomial polynomial){
         if(polynomial == null){
             return null;
         }
-        int[] coefficients = bringToField(field, polynomial.getCoefficients());
+        int[] coefficients = bringToField(galoisField, polynomial.getCoefficients());
         return new Polynomial(coefficients);
     }
 
-    static boolean isInField(Field field, int number){
-        return number >= 0 && number < field.getCharacteristic();
+    static boolean isInField(GaloisField galoisField, int number){
+        return number >= 0 && number < galoisField.getCharacteristic();
     }
 
-    static boolean isInField(Field field, Polynomial polynomial){
+    static boolean isInField(GaloisField galoisField, Polynomial polynomial){
         if(polynomial == null){
             return false;
         }
         return Arrays.stream(polynomial.getCoefficients())
-                .allMatch(x -> isInField(field, x));
+                .allMatch(x -> isInField(galoisField, x));
     }
 
-    private static int[] addition(Field field, int[] firstC, int[] secondC){
-        firstC = bringToField(field, firstC);
-        secondC = bringToField(field, secondC);
-        return bringToField(field, addition(firstC, secondC));
+    private static int[] addition(GaloisField galoisField, int[] firstC, int[] secondC){
+        firstC = bringToField(galoisField, firstC);
+        secondC = bringToField(galoisField, secondC);
+        return bringToField(galoisField, addition(firstC, secondC));
     }
 
-    private static int[] subtraction(Field field, int[] reducedC, int[] subtractedC){
-        reducedC = bringToField(field, reducedC);
-        subtractedC = bringToField(field, subtractedC);
-        return bringToField(field, subtraction(reducedC, subtractedC));
+    private static int[] subtraction(GaloisField galoisField, int[] reducedC, int[] subtractedC){
+        reducedC = bringToField(galoisField, reducedC);
+        subtractedC = bringToField(galoisField, subtractedC);
+        return bringToField(galoisField, subtraction(reducedC, subtractedC));
     }
 
-    private static int[] multiplication(Field field, int[] firstC, int[] secondC){
-        firstC = bringToField(field, firstC);
-        secondC = bringToField(field, secondC);
-        return bringToField(field, multiplication(firstC, secondC));
+    private static int[] multiplication(GaloisField galoisField, int[] firstC, int[] secondC){
+        firstC = bringToField(galoisField, firstC);
+        secondC = bringToField(galoisField, secondC);
+        return bringToField(galoisField, multiplication(firstC, secondC));
     }
 
-    private static int[] division(Field field, int[] divisible, int[] divisor){
-        divisible = bringToField(field,divisible);
-        divisor = bringToField(field, divisor);
+    private static int[] division(GaloisField galoisField, int[] divisible, int[] divisor){
+        divisible = bringToField(galoisField,divisible);
+        divisor = bringToField(galoisField, divisor);
         int[] division = new int[divisible.length - divisor.length + 1];
         int[] current;
         int divisibleDegree = divisible.length - 1;
@@ -235,15 +246,15 @@ class FieldOperations extends Operations {
             current = new int[divisibleDegree];
             division[divisibleDegree - divisorDegree] = divisible[divisibleDegree] / divisor[divisorDegree];
             current[divisibleDegree - divisorDegree] = division[divisibleDegree - divisorDegree];
-            divisible = subtraction(field, divisible, multiplication(field, current, divisor));
+            divisible = subtraction(galoisField, divisible, multiplication(galoisField, current, divisor));
             divisibleDegree--;
         }
         return division;
     }
 
-    private static int[] bringToField(Field field, int[] coefficients){
+    private static int[] bringToField(GaloisField galoisField, int[] coefficients){
         return Arrays.stream(coefficients)
-                .map(x -> bringToField(field, x))
+                .map(x -> bringToField(galoisField, x))
                 .toArray();
     }
 

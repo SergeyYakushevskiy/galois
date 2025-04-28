@@ -2,6 +2,7 @@ package dstu.csae.galois.extended;
 
 import dstu.csae.exceptions.ExceptionMessageConstants;
 import dstu.csae.galois.Field;
+import dstu.csae.galois.GaloisField;
 import dstu.csae.index.Index;
 import dstu.csae.polynomial.Polynomial;
 import lombok.Getter;
@@ -11,12 +12,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-public class ExtendedField {
+public class GaloisFieldExtension implements Field {
 
     public final Polynomial ZERO;
     public final Polynomial ONE;
     @Getter
-    private final Field field;
+    private final GaloisField galoisField;
     @Getter
     private final int degree;
     @Getter
@@ -26,20 +27,20 @@ public class ExtendedField {
     final  int[][] multiplicationMatrix;
 
 
-    public ExtendedField(Field field, Polynomial polynomial)
+    public GaloisFieldExtension(GaloisField galoisField, Polynomial polynomial)
         throws IllegalArgumentException{
-        if(Objects.isNull(field)){
+        if(Objects.isNull(galoisField)){
             throw new IllegalArgumentException(ExceptionMessageConstants.FIELD_IS_NULL);
         }
         if(Objects.isNull(polynomial)){
             throw new IllegalArgumentException(ExceptionMessageConstants.POLYNOMIAL_IS_NULL);
         }
-        if(!field.isIrreducible(polynomial)){
+        if(!galoisField.isIrreducible(polynomial)){
             throw new IllegalArgumentException(
                     String.format(ExceptionMessageConstants.POLYNOMIAL_IS_REDUCIBLE,
-                            polynomial, field));
+                            polynomial, galoisField));
         }
-        this.field = field;
+        this.galoisField = galoisField;
         this.polynomial = polynomial;
         this.degree = polynomial.getDegree();
         elements = generateElements();
@@ -68,8 +69,8 @@ public class ExtendedField {
     }
 
     private ArrayList<Polynomial> generateElements(){
-        int characteristic = field.getCharacteristic();
-        int elementCount = (int)Math.pow(field.getCharacteristic(), degree);
+        int characteristic = galoisField.getCharacteristic();
+        int elementCount = (int)Math.pow(galoisField.getCharacteristic(), degree);
         int[][] coefficients = new int[elementCount][degree];
         int period = 1;
         int currentDegree = 0;
@@ -96,10 +97,10 @@ public class ExtendedField {
         int[][] additionMatrix = new int[elements.size()][elements.size()];
         for(int i = 0; i < elements.size(); i ++){
             for(int j = 0; j < elements.size(); j ++){
-                Optional<Polynomial> addition = field.add(elements.get(i), elements.get(j));
+                Optional<Polynomial> addition = galoisField.add(elements.get(i), elements.get(j));
                 if(addition.isPresent()){
                     Polynomial added = addition.get();
-                    added = field.mod(added, polynomial).orElse(Polynomial.ZERO);
+                    added = galoisField.mod(added, polynomial).orElse(Polynomial.ZERO);
                     additionMatrix[i][j] = elements.indexOf(added);
                 }
             }
@@ -111,10 +112,10 @@ public class ExtendedField {
         int[][] multiplicationMatrix = new int[elements.size()][elements.size()];
         for(int i = 0; i < elements.size(); i ++){
             for(int j = 0; j < elements.size(); j ++){
-                Optional<Polynomial> multiplication = field.multiply(elements.get(i), elements.get(j));
+                Optional<Polynomial> multiplication = galoisField.multiply(elements.get(i), elements.get(j));
                 if(multiplication.isPresent()){
                     Polynomial multiplied = multiplication.get();
-                    multiplied = field.mod(multiplied, polynomial).orElse(Polynomial.ONE);
+                    multiplied = galoisField.mod(multiplied, polynomial).orElse(Polynomial.ONE);
                     multiplicationMatrix[i][j] = elements.indexOf(multiplied);
                 }
             }
@@ -209,19 +210,19 @@ public class ExtendedField {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        ExtendedField that = (ExtendedField) o;
-        return Objects.equals(field, that.field) && Objects.equals(polynomial, that.polynomial);
+        GaloisFieldExtension that = (GaloisFieldExtension) o;
+        return Objects.equals(galoisField, that.galoisField) && Objects.equals(polynomial, that.polynomial);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(field, polynomial);
+        return Objects.hash(galoisField, polynomial);
     }
 
     @Override
     public String toString() {
         return String.format("GF(%s%s)(%s)",
-                field.getCharacteristic(),
+                galoisField.getCharacteristic(),
                 Index.toSuperscript(String.valueOf(degree)),
                 polynomial);
     }
