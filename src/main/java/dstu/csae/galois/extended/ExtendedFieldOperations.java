@@ -1,6 +1,6 @@
 package dstu.csae.galois.extended;
 
-import dstu.csae.galois.Field;
+import dstu.csae.galois.GaloisField;
 import dstu.csae.polynomial.Polynomial;
 
 import java.util.*;
@@ -8,95 +8,95 @@ import java.util.stream.IntStream;
 
 public class ExtendedFieldOperations {
 
-    static int addition(ExtendedField extendedField, int first, int second){
-        if(Objects.isNull(extendedField)){
+    static int addition(GaloisFieldExtension galoisFieldExtension, int first, int second){
+        if(Objects.isNull(galoisFieldExtension)){
             return -1;
         }
-        first = bringToField(extendedField, first);
-        second = bringToField(extendedField, second);
-        return extendedField.additionMatrix[first][second];
+        first = bringToField(galoisFieldExtension, first);
+        second = bringToField(galoisFieldExtension, second);
+        return galoisFieldExtension.additionMatrix[first][second];
     }
 
-    static Polynomial addition(ExtendedField extendedField, Polynomial first, Polynomial second){
-        if(checkNullable(extendedField, first, second)){
+    static Polynomial addition(GaloisFieldExtension galoisFieldExtension, Polynomial first, Polynomial second){
+        if(checkNullable(galoisFieldExtension, first, second)){
             return null;
         }
-        int firstI = extendedField.indexOf(bringToField(extendedField, first));
-        int secondI = extendedField.indexOf(bringToField(extendedField, second));
-        int additionI = extendedField.additionMatrix[firstI][secondI];
-        return extendedField.get(additionI);
+        int firstI = galoisFieldExtension.indexOf(bringToField(galoisFieldExtension, first));
+        int secondI = galoisFieldExtension.indexOf(bringToField(galoisFieldExtension, second));
+        int additionI = galoisFieldExtension.additionMatrix[firstI][secondI];
+        return galoisFieldExtension.get(additionI);
     }
 
-    static int subtraction(ExtendedField extendedField, int reduced, int subtracted){
-        if(Objects.isNull(extendedField)){
+    static int subtraction(GaloisFieldExtension galoisFieldExtension, int reduced, int subtracted){
+        if(Objects.isNull(galoisFieldExtension)){
             return -1;
         }
-        reduced = bringToField(extendedField, reduced);
-        subtracted = bringToField(extendedField, subtracted);
-        subtracted = inverseOfAddition(extendedField, subtracted);
-        return extendedField.additionMatrix[reduced][subtracted];
+        reduced = bringToField(galoisFieldExtension, reduced);
+        subtracted = bringToField(galoisFieldExtension, subtracted);
+        subtracted = inverseOfAddition(galoisFieldExtension, subtracted);
+        return galoisFieldExtension.additionMatrix[reduced][subtracted];
     }
 
-    static Polynomial subtraction(ExtendedField extendedField, Polynomial reduced, Polynomial subtracted){
-        if(checkNullable(extendedField, reduced, subtracted)){
+    static Polynomial subtraction(GaloisFieldExtension galoisFieldExtension, Polynomial reduced, Polynomial subtracted){
+        if(checkNullable(galoisFieldExtension, reduced, subtracted)){
             return null;
         }
-        int reducedI = extendedField.indexOf(bringToField(extendedField, reduced));
-        int subtractedI = extendedField.indexOf(
-                inverseOfAddition(extendedField, bringToField(extendedField, subtracted)));
-        int subtractionI = extendedField.additionMatrix[reducedI][subtractedI];
-        return extendedField.get(subtractionI);
+        int reducedI = galoisFieldExtension.indexOf(bringToField(galoisFieldExtension, reduced));
+        int subtractedI = galoisFieldExtension.indexOf(
+                inverseOfAddition(galoisFieldExtension, bringToField(galoisFieldExtension, subtracted)));
+        int subtractionI = galoisFieldExtension.additionMatrix[reducedI][subtractedI];
+        return galoisFieldExtension.get(subtractionI);
     }
 
-    static int multiplication(ExtendedField extendedField, int first, int second){
-        if(Objects.isNull(extendedField)){
+    static int multiplication(GaloisFieldExtension galoisFieldExtension, int first, int second){
+        if(Objects.isNull(galoisFieldExtension)){
             return -1;
         }
-        first = bringToField(extendedField, first);
-        second = bringToField(extendedField, second);
-        return extendedField.multiplicationMatrix[first][second];
+        first = bringToField(galoisFieldExtension, first);
+        second = bringToField(galoisFieldExtension, second);
+        return galoisFieldExtension.multiplicationMatrix[first][second];
     }
 
-    static Polynomial multiplication(ExtendedField extendedField, Polynomial first, Polynomial second){
-        if(checkNullable(extendedField, first, second)){
+    static Polynomial multiplication(GaloisFieldExtension galoisFieldExtension, Polynomial first, Polynomial second){
+        if(checkNullable(galoisFieldExtension, first, second)){
             return null;
         }
-        int firstI = extendedField.indexOf(bringToField(extendedField, first));
-        int secondI = extendedField.indexOf(bringToField(extendedField, second));
-        int multiplicationI = extendedField.multiplicationMatrix[firstI][secondI];
-        return extendedField.get(multiplicationI);
+        int firstI = galoisFieldExtension.indexOf(bringToField(galoisFieldExtension, first));
+        int secondI = galoisFieldExtension.indexOf(bringToField(galoisFieldExtension, second));
+        int multiplicationI = galoisFieldExtension.multiplicationMatrix[firstI][secondI];
+        return galoisFieldExtension.get(multiplicationI);
     }
 
-    static Polynomial division(ExtendedField extendedField, Polynomial divisible, Polynomial divisor){
-        if(checkNullable(extendedField, divisible, divisor)){
+    static Polynomial division(GaloisFieldExtension galoisFieldExtension, Polynomial divisible, Polynomial divisor){
+        if(checkNullable(galoisFieldExtension, divisible, divisor)){
             return null;
         }
-        int divisibleI = extendedField.indexOf(bringToField(extendedField, divisible));
-        int divisorI = extendedField.indexOf(
-                inverseOfMultiplication(extendedField, bringToField(extendedField, divisor)));
-        int divisionI = extendedField.multiplicationMatrix[divisibleI][divisorI];
-        return extendedField.get(divisionI);
+        int divisibleI = galoisFieldExtension.indexOf(bringToField(galoisFieldExtension, divisible));
+        int divisorI = galoisFieldExtension.indexOf(
+                inverseOfMultiplication(galoisFieldExtension, bringToField(galoisFieldExtension, divisor)));
+        int divisionI = galoisFieldExtension.multiplicationMatrix[divisibleI][divisorI];
+        return galoisFieldExtension.get(divisionI);
     }
 
-    static int division(ExtendedField extendedField, int divisible, int divisor){
-        if(Objects.isNull(extendedField)){
+    static int division(GaloisFieldExtension galoisFieldExtension, int divisible, int divisor){
+        if(Objects.isNull(galoisFieldExtension)){
             return -1;
         }
-        divisible = bringToField(extendedField, divisible);
-        divisor = bringToField(extendedField, divisor);
-        divisor = inverseOfAddition(extendedField, divisor);
-        return extendedField.multiplicationMatrix[divisible][divisor];
+        divisible = bringToField(galoisFieldExtension, divisible);
+        divisor = bringToField(galoisFieldExtension, divisor);
+        divisor = inverseOfAddition(galoisFieldExtension, divisor);
+        return galoisFieldExtension.multiplicationMatrix[divisible][divisor];
     }
 
-    static int powMod(ExtendedField extendedField, int number, int degree){
-        if(Objects.isNull(extendedField)){
+    static int powMod(GaloisFieldExtension galoisFieldExtension, int number, int degree){
+        if(Objects.isNull(galoisFieldExtension)){
             return -1;
         }
-        if(!isInBounds(extendedField, number)){
-            number = bringToField(extendedField, number);
+        if(!isInBounds(galoisFieldExtension, number)){
+            number = bringToField(galoisFieldExtension, number);
         }
         if(degree < 0){
-            number = inverseOfMultiplication(extendedField, number);
+            number = inverseOfMultiplication(galoisFieldExtension, number);
             degree = -degree;
         }
         if(degree == 1){
@@ -105,81 +105,81 @@ public class ExtendedFieldOperations {
         int multiplier = 1;
         while (degree != 1){
             if(degree % 2 != 0){
-                multiplier = multiplication(extendedField, multiplier, number);
+                multiplier = multiplication(galoisFieldExtension, multiplier, number);
                 degree --;
             }
-            number = multiplication(extendedField, number, number);
+            number = multiplication(galoisFieldExtension, number, number);
             degree /= 2;
         }
-        return multiplication(extendedField, multiplier, number);
+        return multiplication(galoisFieldExtension, multiplier, number);
     }
 
-    static Polynomial powMod(ExtendedField extendedField, Polynomial polynomial, int degree){
-        if(checkNullable(extendedField, polynomial)){
+    static Polynomial powMod(GaloisFieldExtension galoisFieldExtension, Polynomial polynomial, int degree){
+        if(checkNullable(galoisFieldExtension, polynomial)){
             return null;
         }
-        int polynomialI = extendedField.indexOf(bringToField(extendedField, polynomial));
-        return extendedField.get(powMod(extendedField, polynomialI, degree));
+        int polynomialI = galoisFieldExtension.indexOf(bringToField(galoisFieldExtension, polynomial));
+        return galoisFieldExtension.get(powMod(galoisFieldExtension, polynomialI, degree));
     }
 
-    static Polynomial inverseOfAddition(ExtendedField extendedField, Polynomial polynomial){
-        if(checkNullable(extendedField, polynomial)){
+    static Polynomial inverseOfAddition(GaloisFieldExtension galoisFieldExtension, Polynomial polynomial){
+        if(checkNullable(galoisFieldExtension, polynomial)){
             return null;
         }
-        Polynomial bring = Optional.ofNullable(bringToField(extendedField, polynomial))
-                .orElse(extendedField.ZERO);
-        int indexOfBring = extendedField.indexOf(bring);
-        return extendedField.get(inverseOfAddition(extendedField, indexOfBring));
+        Polynomial bring = Optional.ofNullable(bringToField(galoisFieldExtension, polynomial))
+                .orElse(galoisFieldExtension.ZERO);
+        int indexOfBring = galoisFieldExtension.indexOf(bring);
+        return galoisFieldExtension.get(inverseOfAddition(galoisFieldExtension, indexOfBring));
     }
 
-    static Polynomial inverseOfMultiplication(ExtendedField extendedField, Polynomial polynomial) {
-        if (checkNullable(extendedField, polynomial)) {
+    static Polynomial inverseOfMultiplication(GaloisFieldExtension galoisFieldExtension, Polynomial polynomial) {
+        if (checkNullable(galoisFieldExtension, polynomial)) {
             return null;
         }
-        Polynomial bring = Optional.ofNullable(bringToField(extendedField, polynomial))
-                .orElse(extendedField.ZERO);
-        if (bring.equals(extendedField.ZERO)) {
+        Polynomial bring = Optional.ofNullable(bringToField(galoisFieldExtension, polynomial))
+                .orElse(galoisFieldExtension.ZERO);
+        if (bring.equals(galoisFieldExtension.ZERO)) {
             return null;
         }
-        int indexOfBring = extendedField.indexOf(bring);
-        return extendedField.get(inverseOfMultiplication(extendedField, indexOfBring));
+        int indexOfBring = galoisFieldExtension.indexOf(bring);
+        return galoisFieldExtension.get(inverseOfMultiplication(galoisFieldExtension, indexOfBring));
     }
 
-    static int bringToField(ExtendedField extendedField, int index){
-        if(checkNullable(extendedField)){
+    static int bringToField(GaloisFieldExtension galoisFieldExtension, int index){
+        if(checkNullable(galoisFieldExtension)){
             return 0;
         }
-        int elementCount = extendedField.size();
+        int elementCount = galoisFieldExtension.size();
         index %= elementCount;
         return index < 0 ? index + elementCount : index;
     }
 
-    static Polynomial bringToField(ExtendedField extendedField, Polynomial polynomial){
-        if(checkNullable(extendedField, polynomial)){
+    static Polynomial bringToField(GaloisFieldExtension galoisFieldExtension, Polynomial polynomial){
+        if(checkNullable(galoisFieldExtension, polynomial)){
             return null;
         }
-        Field field = extendedField.getField();
-        Optional<Polynomial> bringPolynomial = field.bringToField(polynomial);
+        GaloisField galoisField = galoisFieldExtension.getGaloisField();
+        Optional<Polynomial> bringPolynomial = galoisField.bringToField(polynomial);
         if(bringPolynomial.isEmpty()) {
             return null;
         }
         Polynomial result = bringPolynomial.get();
-        bringPolynomial = field.mod(result, extendedField.getPolynomial());
+        bringPolynomial = galoisField.mod(result, galoisFieldExtension.getPolynomial());
         return bringPolynomial.orElse(null);
     }
 
-    static int inverseOfAddition(ExtendedField extendedField, int index){
-        if(!isInBounds(extendedField, index)){
+    static int inverseOfAddition(GaloisFieldExtension galoisFieldExtension, int index){
+        if(!isInBounds(galoisFieldExtension, index)){
             return -1;
         }
-        return inverseOf(extendedField.additionMatrix, index, 0);
+        return inverseOf(galoisFieldExtension.additionMatrix, index, 0);
     }
 
-    static int inverseOfMultiplication(ExtendedField extendedField, int index){
-        if(!isInBounds(extendedField, index)){
+    static int inverseOfMultiplication(GaloisFieldExtension galoisFieldExtension, int index){
+        if(!isInBounds(galoisFieldExtension, index)){
             return -1;
         }
-        return inverseOf(extendedField.multiplicationMatrix, index, 1);
+        return inverseOf(galoisFieldExtension.multiplicationMatrix, index, 1);
     }
 
     private static int inverseOf(int[][] operationMatrix, int index, int neutralElement){
@@ -192,30 +192,30 @@ public class ExtendedFieldOperations {
         return inverse.getAsInt();
     }
 
-    static boolean isInBounds(ExtendedField extendedField, int number){
-        return number >= 0 && number < extendedField.size();
+    static boolean isInBounds(GaloisFieldExtension galoisFieldExtension, int number){
+        return number >= 0 && number < galoisFieldExtension.size();
     }
 
-    static boolean isPrimitive(ExtendedField extendedField, int element){
-        if(Objects.isNull(extendedField)){
+    static boolean isPrimitive(GaloisFieldExtension galoisFieldExtension, int element){
+        if(Objects.isNull(galoisFieldExtension)){
             return false;
         }
         HashSet<Integer> generatingElements = new HashSet<>(){{add(0);}};
-        for(int i = 1; i <= extendedField.size(); i++){
-            generatingElements.add(powMod(extendedField, element, i));
+        for(int i = 1; i <= galoisFieldExtension.size(); i++){
+            generatingElements.add(powMod(galoisFieldExtension, element, i));
         }
-        return generatingElements.size() == extendedField.size();
+        return generatingElements.size() == galoisFieldExtension.size();
     }
 
-    static boolean isPrimitive(ExtendedField extendedField, Polynomial polynomial){
-        if(checkNullable(extendedField, polynomial)){
+    static boolean isPrimitive(GaloisFieldExtension galoisFieldExtension, Polynomial polynomial){
+        if(checkNullable(galoisFieldExtension, polynomial)){
             return false;
         }
-        if(!extendedField.isInField(polynomial)){
+        if(!galoisFieldExtension.isInField(polynomial)){
             return false;
         }
-        int polynomialI = extendedField.indexOf(polynomial);
-        return isPrimitive(extendedField, polynomialI);
+        int polynomialI = galoisFieldExtension.indexOf(polynomial);
+        return isPrimitive(galoisFieldExtension, polynomialI);
     }
 
     private static boolean checkNullable(Object ... objects){
