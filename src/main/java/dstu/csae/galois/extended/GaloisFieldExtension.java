@@ -50,7 +50,9 @@ public class GaloisFieldExtension implements Field {
         multiplicationMatrix = generateMultiplicationMatrix();
     }
 
-    public int size(){
+
+    @Override
+    public int getCharacteristic() {
         return elements.size();
     }
 
