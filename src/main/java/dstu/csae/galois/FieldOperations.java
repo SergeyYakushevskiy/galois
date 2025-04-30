@@ -7,6 +7,7 @@ import dstu.csae.polynomial.Polynomial;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Objects;
 
 class FieldOperations extends Operations {
@@ -173,8 +174,20 @@ class FieldOperations extends Operations {
         return number;
     }
 
+
     static boolean isIrreducible(GaloisField galoisField, Polynomial polynomial){
         return !checkNullable(galoisField, polynomial);
+    }
+
+    static boolean isPrimitive(GaloisField field, int element){
+        if(Objects.isNull(field)){
+            return false;
+        }
+        HashSet<Integer> generated = new HashSet<>(){{add(0);}};
+        for(int i = 1; i <= field.getCharacteristic(); i ++){
+            generated.add(powMod(field, element, i));
+        }
+        return generated.size() == field.getCharacteristic();
     }
 
     static int bringToField(GaloisField galoisField, int number){

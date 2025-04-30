@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-public class GaloisField implements Field, Cloneable{
+public class GaloisField implements Field<Integer>, Cloneable{
 
     @Getter private int characteristic;
     private int[] elements;
@@ -109,6 +109,18 @@ public class GaloisField implements Field, Cloneable{
         return FieldOperations.isInField(this, polynomial);
     }
 
+    @Override
+    public Integer findFirstPrimitive() {
+        return Arrays.stream(elements)
+                .filter(this::isPrimitive)
+                .findFirst()
+                .orElse(-1);
+    }
+
+    public boolean isPrimitive(int element){
+        return FieldOperations.isPrimitive(this, element);
+    }
+
     public boolean isIrreducible(Polynomial polynomial)
             throws IllegalArgumentException{
         Optional.ofNullable(polynomial).orElseThrow(() ->
@@ -149,4 +161,6 @@ public class GaloisField implements Field, Cloneable{
             throw new AssertionError();
         }
     }
+
+
 }
