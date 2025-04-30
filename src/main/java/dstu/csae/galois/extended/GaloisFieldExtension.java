@@ -12,7 +12,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-public class GaloisFieldExtension implements Field {
+public class GaloisFieldExtension implements Field<Polynomial> {
 
     public final Polynomial ZERO;
     public final Polynomial ONE;
@@ -50,8 +50,22 @@ public class GaloisFieldExtension implements Field {
         multiplicationMatrix = generateMultiplicationMatrix();
     }
 
-    public int size(){
+
+    @Override
+    public int getCharacteristic() {
         return elements.size();
+    }
+
+    @Override
+    public Polynomial findFirstPrimitive() {
+        return elements.stream()
+                .filter(this::isPrimitive)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public int findFirstIntPrimitive(){
+        return indexOf(findFirstPrimitive());
     }
 
     public Polynomial get(int index){
