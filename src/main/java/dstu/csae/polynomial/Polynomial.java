@@ -1,8 +1,8 @@
 package dstu.csae.polynomial;
 
+import dstu.csae.index.Index;
 import dstu.csae.exceptions.EmptyCoefficientsException;
 import dstu.csae.exceptions.ExceptionMessageConstants;
-import dstu.csae.index.Index;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -56,8 +56,14 @@ public class Polynomial implements Comparable<Polynomial>, Cloneable{
         return Arrays.copyOf(coefficients, coefficients.length);
     }
 
-    public Optional<BigInteger> evaluate(int x){
-        return evaluate(BigInteger.valueOf(x));
+    public int evaluate(int x) {
+        int result = 0;
+        for (int deg = 0; deg < coefficients.length; deg++) {
+            int xPow = (deg == 0) ? 1 : (int) Math.pow(x, deg);
+            // Внимание: возможны переполнения int при умножении или сложении.
+            result += xPow * coefficients[deg];
+        }
+        return result;
     }
 
     public Optional<BigInteger> evaluate(BigInteger x){
@@ -78,11 +84,9 @@ public class Polynomial implements Comparable<Polynomial>, Cloneable{
                 .mapToDouble(degree -> (Math.pow(x, degree) * coefficients[degree])).sum();
     }
 
-    public Polynomial set(int degree, int coefficient){
-        Polynomial copy = clone();
-        copy.isInBounds(degree);
-        copy.coefficients[degree] = coefficient;
-        return copy;
+    public void set(int degree, int coefficient){
+        isInBounds(degree);
+        coefficients[degree] = coefficient;
     }
 
     public Optional<Polynomial> add(Polynomial p){

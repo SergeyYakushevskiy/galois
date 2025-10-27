@@ -95,6 +95,9 @@ public class ExtendedFieldOperations {
         if(!isInBounds(galoisFieldExtension, number)){
             number = bringToField(galoisFieldExtension, number);
         }
+        if(degree == 0){
+            return 1;
+        }
         if(degree < 0){
             number = inverseOfMultiplication(galoisFieldExtension, number);
             degree = -degree;
@@ -149,7 +152,7 @@ public class ExtendedFieldOperations {
         if(checkNullable(galoisFieldExtension)){
             return 0;
         }
-        int elementCount = galoisFieldExtension.size();
+        int elementCount = galoisFieldExtension.getCharacteristic();
         index %= elementCount;
         return index < 0 ? index + elementCount : index;
     }
@@ -193,7 +196,7 @@ public class ExtendedFieldOperations {
     }
 
     static boolean isInBounds(GaloisFieldExtension galoisFieldExtension, int number){
-        return number >= 0 && number < galoisFieldExtension.size();
+        return number >= 0 && number < galoisFieldExtension.getCharacteristic();
     }
 
     static boolean isPrimitive(GaloisFieldExtension galoisFieldExtension, int element){
@@ -201,10 +204,10 @@ public class ExtendedFieldOperations {
             return false;
         }
         HashSet<Integer> generatingElements = new HashSet<>(){{add(0);}};
-        for(int i = 1; i <= galoisFieldExtension.size(); i++){
+        for(int i = 1; i <= galoisFieldExtension.getCharacteristic(); i++){
             generatingElements.add(powMod(galoisFieldExtension, element, i));
         }
-        return generatingElements.size() == galoisFieldExtension.size();
+        return generatingElements.size() == galoisFieldExtension.getCharacteristic();
     }
 
     static boolean isPrimitive(GaloisFieldExtension galoisFieldExtension, Polynomial polynomial){

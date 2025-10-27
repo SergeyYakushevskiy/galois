@@ -50,7 +50,7 @@ public class GaloisFieldExtension implements Field {
         multiplicationMatrix = generateMultiplicationMatrix();
     }
 
-    public int size(){
+    public int getCharacteristic(){
         return elements.size();
     }
 
@@ -123,6 +123,37 @@ public class GaloisFieldExtension implements Field {
         return multiplicationMatrix;
     }
 
+    public boolean isNormalized(Polynomial p) {
+        if (p == null) {
+            return false;
+        }
+
+        int characteristic = this.getCharacteristic();
+
+        for (int i = 0; i <= p.getDegree(); i++) {
+            int coeff = p.get(i);
+            if (coeff < 0 || coeff >= characteristic) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public Polynomial findFirstPrimitive() {
+        for (int i = 1; i < this.elements.size(); i++) {
+            Polynomial candidate = this.elements.get(i);
+            if (this.isPrimitive(candidate)) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    public int findFirstIntPrimitive(){
+        return indexOf(findFirstPrimitive());
+    }
+
     public int add(int first, int second){
         return ExtendedFieldOperations.addition(this, first, second);
     }
@@ -131,11 +162,11 @@ public class GaloisFieldExtension implements Field {
         return Optional.ofNullable(ExtendedFieldOperations.addition(this, first, second));
     }
 
-    public int subtraction(int reduced, int subtracted){
+    public int subtract(int reduced, int subtracted){
         return ExtendedFieldOperations.subtraction(this, reduced, subtracted);
     }
 
-    public Optional<Polynomial> subtraction(Polynomial reduced, Polynomial subtracted){
+    public Optional<Polynomial> subtract(Polynomial reduced, Polynomial subtracted){
         return Optional.ofNullable(ExtendedFieldOperations.subtraction(this, reduced, subtracted));
     }
 
