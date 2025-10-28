@@ -84,7 +84,7 @@ public class ExtendedFieldOperations {
         }
         divisible = bringToField(galoisFieldExtension, divisible);
         divisor = bringToField(galoisFieldExtension, divisor);
-        divisor = inverseOfAddition(galoisFieldExtension, divisor);
+        divisor = inverseOfMultiplication(galoisFieldExtension, divisor);
         return galoisFieldExtension.multiplicationMatrix[divisible][divisor];
     }
 

@@ -22,7 +22,7 @@ public class GaloisFieldExtension implements Field {
     private final int degree;
     @Getter
     private final Polynomial polynomial;
-    private final ArrayList<Polynomial> elements;
+    @Getter private final ArrayList<Polynomial> elements;
     final int[][] additionMatrix;
     final  int[][] multiplicationMatrix;
 

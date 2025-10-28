@@ -84,29 +84,31 @@ public class Polynomial implements Comparable<Polynomial>, Cloneable{
                 .mapToDouble(degree -> (Math.pow(x, degree) * coefficients[degree])).sum();
     }
 
-    public void set(int degree, int coefficient){
-        isInBounds(degree);
-        coefficients[degree] = coefficient;
+    public Polynomial set(int degree, int coefficient){
+        Polynomial copy = clone();
+        copy.isInBounds(degree);
+        copy.coefficients[degree] = coefficient;
+        return copy;
     }
 
-    public Optional<Polynomial> add(Polynomial p){
-        return Optional.ofNullable(PolynomialOperations.addition(this, p));
+    public Polynomial add(Polynomial p){
+        return PolynomialOperations.addition(this, p);
     }
 
-    public Optional<Polynomial> subtract(Polynomial p){
-        return Optional.ofNullable(PolynomialOperations.subtraction(this, p));
+    public Polynomial subtract(Polynomial p){
+        return PolynomialOperations.subtraction(this, p);
     }
 
-    public Optional<Polynomial> multiply(Polynomial p){
-        return Optional.ofNullable(PolynomialOperations.multiplication(this, p));
+    public Polynomial multiply(Polynomial p){
+        return PolynomialOperations.multiplication(this, p);
     }
 
-    public Optional<Polynomial> divide(Polynomial p){
-        return Optional.ofNullable(PolynomialOperations.division(this, p));
+    public Polynomial divide(Polynomial p){
+        return PolynomialOperations.division(this, p);
     }
 
-    public Optional<Polynomial> mod(Polynomial p){
-        return Optional.ofNullable(PolynomialOperations.mod(this, p));
+    public Polynomial mod(Polynomial p){
+        return PolynomialOperations.mod(this, p);
     }
 
     public boolean isInBounds(int degree) throws IndexOutOfBoundsException{
@@ -185,16 +187,22 @@ public class Polynomial implements Comparable<Polynomial>, Cloneable{
     }
 
     @Override
-    public int compareTo(Polynomial o) {
-        if(o == null){
+    public int compareTo(Polynomial other) {
+        if (other == null) {
             return 1;
         }
-        if(this.equals(o)){
-            return 0;
+        // Сначала по степени
+        if (this.getDegree() != other.getDegree()) {
+            return Integer.compare(this.getDegree(), other.getDegree());
         }
-        Polynomial division = Optional.ofNullable(PolynomialOperations.division(this, o))
-                .orElse(Polynomial.ZERO);
-        int degree = division.getDegree();
-        return Integer.compare(division.get(degree), 0);
+        // Потом по коэффициентам от старшего к младшему
+        for (int i = this.getDegree(); i >= 0; i--) {
+            int cmp = Integer.compare(this.get(i), other.get(i));
+            if (cmp != 0) {
+                return cmp;
+            }
+        }
+        return 0;
     }
+
 }
